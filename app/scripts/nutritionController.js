@@ -1,125 +1,197 @@
-angular.module('nutritionApp')
-    .controller('nutritionController', ['$http', '$q', '$timeout', '$scope', function ($http, $q, $timeout, $scope) {
-        'use strict';
+angular.module('nutritionApp').controller('nutritionController', ['$http', '$mdEditDialog', '$q', '$timeout', '$scope', function ($http, $mdEditDialog, $q, $timeout, $scope) {
+  'use strict';
 
-        $scope.selected = [];
+  $scope.options = {
+    rowSelection: true,
+    multiSelect: true,
+    autoSelect: true,
+    decapitate: false,
+    largeEditDialog: false,
+    boundaryLinks: false,
+    limitSelect: true,
+    pageSelect: true
+  };
 
-        $scope.query = {
-            order: 'name',
-            limit: 5,
-            page: 1
-        };
+  $scope.selected = [];
+  $scope.limitOptions = [5, 10, 15, {
+    label: 'All',
+    value: function () {
+      return $scope.desserts ? $scope.desserts.count : 0;
+    }
+  }];
 
-        $scope.columns = [{
-            name: 'Dessert',
-            orderBy: 'name',
-            unit: '100g serving'
-        }, {
-            descendFirst: true,
-            name: 'Type',
-            orderBy: 'type'
-        }, {
-            name: 'Date',
-            orderBy: 'date'
-        }, {
-            name: 'Calories',
-            numeric: true,
-            orderBy: 'calories.value'
-        }, {
-            name: 'Note',
-            orderBy: 'note',
-            trim: true
-        }, {
-            name: 'Fat',
-            numeric: true,
-            orderBy: 'fat.value',
-            unit: 'g'
-        }, {
-            name: 'Carbs',
-            numeric: true,
-            orderBy: 'carbs.value',
-            unit: 'g'
-        }, {
-            name: 'Protein',
-            numeric: true,
-            orderBy: 'protein.value',
-            trim: true,
-            unit: 'g'
-        }, {
-            name: 'Sodium',
-            numeric: true,
-            orderBy: 'sodium.value',
-            unit: 'mg'
-        }, {
-            name: 'Calcium',
-            numeric: true,
-            orderBy: 'calcium.value',
-            unit: '%'
-        }, {
-            name: 'Iron',
-            numeric: true,
-            orderBy: 'iron.value',
-            unit: '%'
-        }];
+  $scope.query = {
+    order: 'name',
+    limit: 5,
+    page: 1
+  };
 
-        $http.get('desserts.js').then(function (desserts) {
-            $scope.desserts = desserts.data;
-        });
+  // for testing ngRepeat
+  $scope.columns = [{
+    name: 'Dessert',
+    orderBy: 'name',
+    unit: '100g serving'
+  }, {
+    descendFirst: true,
+    name: 'Type',
+    orderBy: 'type'
+  }, {
+    name: 'Calories',
+    numeric: true,
+    orderBy: 'calories.value'
+  }, {
+    name: 'Fat',
+    numeric: true,
+    orderBy: 'fat.value',
+    unit: 'g'
+  }, /* {
+    name: 'Carbs',
+    numeric: true,
+    orderBy: 'carbs.value',
+    unit: 'g'
+  }, */ {
+    name: 'Protein',
+    numeric: true,
+    orderBy: 'protein.value',
+    trim: true,
+    unit: 'g'
+  }, /* {
+    name: 'Sodium',
+    numeric: true,
+    orderBy: 'sodium.value',
+    unit: 'mg'
+  }, {
+    name: 'Calcium',
+    numeric: true,
+    orderBy: 'calcium.value',
+    unit: '%'
+  }, */ {
+    name: 'Iron',
+    numeric: true,
+    orderBy: 'iron.value',
+    unit: '%'
+  }, {
+    name: 'Comments',
+    orderBy: 'comment'
+  }];
 
-        $scope.getTypes = function () {
-            return ['Candy', 'Ice cream', 'Other', 'Pastry'];
-        };
+  $http.get('desserts.json').then(function (desserts) {
+    $scope.desserts = desserts.data;
 
-        $scope.onpagechange = function (page, limit) {
+    // $scope.selected.push($scope.desserts.data[1]);
 
-            console.log('Scope Page: ' + $scope.query.page + ' Scope Limit: ' + $scope.query.limit);
-            console.log('Page: ' + page + ' Limit: ' + limit);
+    // $scope.selected.push({
+    //   name: 'Ice cream sandwich',
+    //   type: 'Ice cream',
+    //   calories: { value: 237.0 },
+    //   fat: { value: 9.0 },
+    //   carbs: { value: 37.0 },
+    //   protein: { value: 4.3 },
+    //   sodium: { value: 129.0 },
+    //   calcium: { value: 8.0 },
+    //   iron: { value: 1.0 }
+    // });
 
-            var deferred = $q.defer();
+    // $scope.selected.push({
+    //   name: 'Eclair',
+    //   type: 'Pastry',
+    //   calories: { value:  262.0 },
+    //   fat: { value: 16.0 },
+    //   carbs: { value: 24.0 },
+    //   protein: { value:  6.0 },
+    //   sodium: { value: 337.0 },
+    //   calcium: { value:  6.0 },
+    //   iron: { value: 7.0 }
+    // });
 
-            $timeout(function () {
-                deferred.resolve();
-            }, 2000);
+    // $scope.promise = $timeout(function () {
+    //   $scope.desserts = desserts.data;
+    // }, 1000);
+  });
 
-            return deferred.promise;
-        };
+  $scope.editComment = function (event, dessert) {
+    event.stopPropagation();
 
-        $scope.loadStuff = function () {
-            var deferred = $q.defer();
+    var dialog = {
+      // messages: {
+      //   test: 'I don\'t like tests!'
+      // },
+      modelValue: dessert.comment,
+      placeholder: 'Add a comment',
+      save: function (input) {
+        dessert.comment = input.$modelValue;
+      },
+      targetEvent: event,
+      title: 'Add a comment',
+      validators: {
+        'md-maxlength': 30
+      }
+    };
 
-            $timeout(function () {
-                deferred.reject();
-            }, 2000);
+    var promise = $scope.options.largeEditDialog ? $mdEditDialog.large(dialog) : $mdEditDialog.small(dialog);
 
-            $scope.deferred = deferred.promise;
-        };
+    promise.then(function (ctrl) {
+      var input = ctrl.getInput();
 
-        $scope.onorderchange = function (order) {
+      input.$viewChangeListeners.push(function () {
+        input.$setValidity('test', input.$modelValue !== 'test');
+      });
+    });
+  };
 
-            console.log('Scope Order: ' + $scope.query.order);
-            console.log('Order: ' + order);
+  $scope.toggleLimitOptions = function () {
+    $scope.limitOptions = $scope.limitOptions ? undefined : [5, 10, 15];
+  };
 
-            var deferred = $q.defer();
+  $scope.getTypes = function () {
+    return ['Candy', 'Ice cream', 'Other', 'Pastry'];
+  };
 
-            $timeout(function () {
-                deferred.resolve();
-            }, 2000);
+  $scope.onPaginate = function(page, limit) {
+    console.log('Scope Page: ' + $scope.query.page + ' Scope Limit: ' + $scope.query.limit);
+    console.log('Page: ' + page + ' Limit: ' + limit);
 
-            return deferred.promise;
-        };
+    $scope.promise = $timeout(function () {
 
-        $scope.rowUpdateCallback = function (item,onError) {
-           alert('item :' + item);
-        };
+    }, 2000);
+  };
 
-        $scope.rowClick = function (item){
-            alert('click:' + item);
-        };
+  $scope.deselect = function (item) {
+    console.log(item.name, 'was deselected');
+  };
 
-        $scope.toggleTable = function(){
-            $scope.toggleContainer = !$scope.toggleContainer;
-        };
+  $scope.log = function (item) {
+    console.log(item.name, 'was selected');
+  };
 
-        $scope.toggleContainer = false;
+  $scope.loadStuff = function () {
+    $scope.promise = $timeout(function () {
 
-    }]);
+    }, 2000);
+  };
+
+  $scope.onReorder = function(order) {
+
+    console.log('Scope Order: ' + $scope.query.order);
+    console.log('Order: ' + order);
+
+    $scope.promise = $timeout(function () {
+
+    }, 2000);
+  };
+
+  $scope.rowUpdateCallback = function (item,onError) {
+     alert('item :' + item);
+  };
+
+  $scope.rowClick = function (item){
+      alert('click:' + item);
+  };
+
+  $scope.toggleTable = function(){
+      $scope.toggleContainer = !$scope.toggleContainer;
+  };
+
+  $scope.toggleContainer = false;
+
+}]);

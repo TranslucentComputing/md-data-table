@@ -1,10 +1,10 @@
 {
   "name": "angular-material-data-table",
-  "version": "0.8.42",
+  "version": "0.10.9",
   "description": "Material Design data table.",
   "main": [
-    "dist/md-data-table.min.js",
-    "dist/md-data-table.min.css"
+    "dist/md-data-table.js",
+    "dist/md-data-table.css"
   ],
   "repository": {
     "type": "git",
@@ -25,16 +25,17 @@
     "app",
     "bower_components",
     "node_modules",
+    "src",
     "Gruntfile.js"
   ],
   "dependencies": {
     "angular": "1.4.9",
     "angular-messages": "1.4.9",
     "angular-material": "1.0.4",
-    "angular-moment":"0.10.3",
+    "angular-moment": "0.10.3",
     "moment": "2.10.6"
   },
-  "resolutions": {
-    "angular": "1.4.9"
+  "devDependencies": {
+    "angular-mocks": "1.4.9"
   }
 }

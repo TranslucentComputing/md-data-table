@@ -148,7 +148,7 @@ function mdDataTablePagination($q) {
             showRowSelection: '=mdShowRowSelection',
             showFirstLast: '=mdShowFirstLast'
         },
-        templateUrl: 'templates.md-data-table-pagination.html',
+        templateUrl: 'md-data-table-pagination.html',
         link: postLink
     };
 }
